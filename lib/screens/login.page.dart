@@ -1,7 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
-  LoginPage({super.key});
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -13,27 +14,58 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool _passwordVisible = false;
-  final _formkey=GlobalKey<FormState>();
+  final _formkey = GlobalKey<FormState>();
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'please enter your email';
     }
-    final emailPattern = '^[^@]+@[^@]+\.[^@]+';
+    final emailPattern = r'^[^@]+@[^@]+\.[^@]+$';
     final regexp = RegExp(emailPattern);
     if (!regexp.hasMatch(value)) {
       return "enter a valid email";
     }
     return null;
   }
-  String? _validatePassword(String? value){
-    if(value==null ||value.isEmpty){
-      return'please enter password';
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'please enter password';
     }
-    if (value.length<6){
-      return'password must contain at least 6 caracters long';
+    if (value.length < 6) {
+      return 'password must contain at least 6 caracters long';
     }
     return null;
+  }
+
+  Future<void> _signIn() async {
+    try {
+      final userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+
+      if (userCredential.user != null && mounted) {
+        debugPrint('Signed in: ${userCredential.user?.email}');
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Sign-in successful!')));
+        Navigator.pushReplacementNamed(context, '/home');
+      }
+    } on FirebaseAuthException catch (e) {
+      final message = switch (e.code) {
+        'user-not-found' => 'No user found for that email.',
+        'wrong-password' || 'invalid-credential' => 'Wrong password provided.',
+        'invalid-email' => 'The email address is invalid.',
+        'user-disabled' => 'This user account has been disabled.',
+        _ => e.message ?? 'Error',
+      };
+
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
+      }
+    }
   }
 
   @override
@@ -106,44 +138,43 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 validator: _validatePassword,
               ),
-              SizedBox(height: 20,),
-              ElevatedButton(onPressed: (){
-                if(_formkey.currentState!.validate()){
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Processing Login!"))
-                  );
-                  Navigator.pushNamed(context, '/home');
-                }
-
-              },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)
-                    )
-                  )
-                  , child: Text(
-                "login",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formkey.currentState!.validate()) {
+                    _signIn();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo,
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-
-              )),
-              SizedBox(height: 20,),
-              TextButton(onPressed: (){
-                Navigator.pushNamed(context, '/register');
-              }, child: Text(
-                "don't have an account . signup",
-                style: TextStyle(
-                  color: Colors.purple,
-                  fontSize: 18,
-                  fontStyle: FontStyle.italic
+                child: Text(
+                  "login",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ))
-
+              ),
+              SizedBox(height: 20),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/register');
+                },
+                child: Text(
+                  "don't have an account . signup",
+                  style: TextStyle(
+                    color: Colors.purple,
+                    fontSize: 18,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
