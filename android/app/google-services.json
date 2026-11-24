@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "909713230825",
+    "firebase_url": "https://project1-1698e-default-rtdb.firebaseio.com",
+    "project_id": "project1-1698e",
+    "storage_bucket": "project1-1698e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:909713230825:android:e2bc235cd10f81c4825978",
+        "android_client_info": {
+          "package_name": "com.example.flutter_smart_application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyprfWa29DjqRrLb-oaWug6MT7d7XGfT0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
